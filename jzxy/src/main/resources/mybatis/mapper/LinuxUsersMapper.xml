@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ausclouds.bdbsec.mapper.LinuxUsersMapper">
+
+    
+    
+
+    <select id="getInfo" resultType="LinuxUserEntity">
+        select *
+        from test 
+    </select>
+    
+    <insert id="insertIntoDb">
+     	 insert into linuxConnInfo (user,passwd,ip,cluster,flag)
+         values (#{user},#{passwd},#{ip},#{cluster},#{flag})
+    </insert>
+    
+    
+        <insert id="insertIntoHostInfo" >
+     	 insert into hostinfo (ip,host_name,host_version,cluster,description)
+         values (#{ip},#{host_name},#{host_version},#{cluster},#{description})
+    </insert>
+    
+    
+    <insert id="insertUsersInfotoDb"  parameterType="java.util.List" useGeneratedKeys="false">
+     	 insert into linuxusersinfo (userName,passwd,groups,node,description) 
+         values 
+         <foreach collection="list" item="item" index="index" separator=",">
+          (
+          #{item.userName},
+          #{item.passwd},
+          #{item.groups},
+          #{item.node},
+          #{item.description}
+          )
+          </foreach>
+    </insert>
+    
+    <select id="getAllIpList" resultType="String">
+    	select ip from hostinfo
+    </select>
+    
+    <select id="getAllUserNameList" resultType="String">
+    	select userName from linuxusersinfo
+    	WHERE node IS NULL 
+    	AND cluster=#{cluster}
+    </select>
+    
+    
+    <insert id="insertAllGroups"  parameterType="java.util.List" useGeneratedKeys="false">
+     	 insert into linuxgroupsinfo (groupName,node,cluster,description) 
+         values 
+         <foreach collection="list" item="item" index="index" separator=",">
+          (
+          #{item.groupName},
+          #{item.node},
+          #{item.cluster},
+          #{item.description}
+          )
+          </foreach>
+    </insert>
+    
+    <insert id="insertAUser" parameterType="LinuxUserEntity">
+    	INSERT INTO linuxusersinfo(userName,passwd,groups,node,cluster,description)
+                 values
+                    (#{userName},#{passwd},#{groups},#{node},#{cluster},#{description});
+    </insert>
+    
+    
+    <insert id="insertAUser2Conn" parameterType="LinuxConnEntity">
+    	 insert into linuxConnInfo (user,passwd,linuxPasswd,ip,cluster,description)
+         values (#{user},#{passwd},#{linuxPasswd},#{ip},#{cluster},#{description})
+    </insert>
+    
+    
+    <select id="getUsersList" parameterType="java.lang.String" resultType="LinuxUserEntity">
+    	SELECT userName,passwd,groups,description from linuxusersinfo
+    	 <where>
+    	   <if test="ip != null and ip != '' "> node = #{ip} </if>
+    	    	 
+    	   <if test="userName != null and userName != '' "> AND userName LIKE '%${userName}%' </if>
+    	   	 
+    	   <if test="group != null and group != '' "> AND groups LIKE '%${group}%' </if>
+    	 </where>
+    	 limit #{page},#{rows} 
+    </select>
+    
+    
+      <select id="getByIp" resultType="LinuxConnEntity" parameterType="java.lang.String">
+    	SELECT user,passwd,ip from linuxConnInfo
+    	WHERE ip=#{ip} AND flag=#{flag}
+    </select>
+    
+    
+    <delete id="delUserByName" parameterType="java.lang.String">
+    	DELETE FROM linuxusersinfo 
+    	WHERE userName = #{userName}
+    	<!-- AND node = #{node}  -->
+    </delete>
+    
+    <delete id="delUserByNameAndNode" parameterType="java.lang.String">
+    	DELETE FROM linuxconninfo 
+    	WHERE user = #{userName}
+        AND ip = #{ip}  
+    </delete>
+    
+    
+    <update id="updateUserInfo" parameterType="java.lang.String">
+    	UPDATE linuxusersinfo
+    	<trim prefix="set" suffixOverrides=",">
+  			<if test="passwd != null and passwd != '' ">passwd=#{passwd},</if>
+  			<if test="groups !=null and groups != '' ">groups=#{groups},</if>
+ 		</trim>
+ 		WHERE userName=#{userName}
+    </update>
+    
+    
+     <insert id="insertAGroup" parameterType="LinuxGroupEntity">
+    	insert into linuxgroupsinfo (groupName,node,cluster,description) 
+         values 
+          (
+          #{groupName},
+          #{node},
+          #{cluster},
+          #{description}
+          )
+    </insert>
+    
+    
+      <delete id="delGroupByGroupName" parameterType="java.lang.String">
+    	DELETE FROM linuxgroupsinfo 
+    	WHERE groupName = #{groupName}
+    	AND node = #{node}
+    </delete>
+    
+    <delete id="delGroupByGroupByGName" parameterType="java.lang.String">
+    	DELETE FROM linuxgroupsinfo 
+    	WHERE groupName = #{groupName}
+    </delete>
+    
+    
+    <select id="getGroupsList"  resultType="LinuxGroupEntity">
+    	SELECT groupName,node,cluster,description from linuxgroupsinfo
+    	 <where>
+    	   <if test="ip != null and ip != '' "> node = #{ip} </if>
+    	    	 
+    	   <if test="groupName != null and groupName != '' "> AND groupName LIKE '%${groupName}%' </if>
+    	   	 
+    	 </where>
+    	 limit #{page},#{rows} 
+    </select>
+    
+    
+    <select id="getGroupsListInfo"  resultType="LinuxGroupEntity">
+    	SELECT groupName,node,cluster,description from linuxgroupsinfo
+    	 <where>
+    	   <if test="groupName != null and groupName != '' "> AND groupName LIKE '%${groupName}%' </if>
+    	 </where>
+    	 limit #{page},#{rows} 
+    </select>
+    
+    
+    <delete id="delGroupByNode" parameterType="java.lang.String">
+    	DELETE FROM linuxgroupsinfo 
+    	WHERE node = #{node}
+    </delete>
+    
+    
+     <select id="getHostInfo" resultType="HostInfoEntity" >
+    	SELECT ip,cluster,description from hostinfo 
+    	  <where>
+    	   <if test="ip != null and ip != '' "> ip LIKE '%${ip}%' </if>
+    	    	 
+    	 </where>
+    	 limit #{page},#{rows}  
+    </select>
+    
+    
+    <delete id="delUserByNode" parameterType="java.lang.String">
+    	DELETE FROM linuxusersinfo 
+    	WHERE node = #{node}
+    </delete>
+    
+    
+    <delete id="delHostByIp" parameterType="java.lang.String">
+    	DELETE FROM linuxconninfo 
+    	WHERE ip = #{ip} 
+    	AND flag = #{flag}
+    </delete>
+    
+       <delete id="delFromHostinfo" parameterType="java.lang.String">
+    	DELETE FROM hostinfo 
+    	WHERE ip = #{ip}
+    </delete>
+	
+	<select id="getDbUserByName" parameterType="java.lang.String" resultType="LinuxUserEntity">
+		SELECT userName,passwd,groups from linuxusersinfo
+		WHERE userName = #{userName}
+	</select>    
+    
+    
+    <update id="changeLinuxPasswd" parameterType="java.lang.String">
+    	UPDATE linuxconninfo SET linuxPasswd=#{linuxPasswd}
+ 		WHERE user=#{userName} 
+ 		AND ip=#{ip}
+    </update>
+    
+     
+    <select id="getUserAndPasswdList" resultType="LinuxConnEntity">
+    	SELECT user,linuxPasswd from linuxconninfo
+    </select>
+    
+    
+     <select id="getUserAndPasswdListByNode" resultType="LinuxConnEntity">
+    	SELECT user,linuxPasswd from linuxconninfo 
+    	WHERE ip=#{ip}
+    </select>
+
+	
+	<select id="getPasswdDbByName" resultType="String">
+    	SELECT passwd from linuxusersinfo where userName=#{userName}
+    </select>
+    
+     <insert id="addCluster">
+     	 insert into clusterinfo (cluster,description)
+         values (#{cluster},#{description})
+    </insert>
+    
+    <update id="updateCluster" parameterType="java.lang.String">
+    	UPDATE clusterinfo SET cluster=#{cluster}
+    	WHERE cluster =#{cluster}
+    </update>
+    
+    <select id="findCluster" resultType="String">
+    	SELECT cluster from clusterinfo 
+    </select>
+    
+    
+    <delete id="delCluster" parameterType="java.lang.String">
+    	DELETE FROM clusterinfo 
+    	WHERE cluster = #{cluster}
+    </delete>
+
+</mapper>

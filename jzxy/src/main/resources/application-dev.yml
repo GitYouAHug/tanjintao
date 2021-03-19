@@ -1,0 +1,30 @@
+
+server:
+  port: 8088
+ 
+spring:
+  datasource:
+    username: root
+    password: 12345678
+    url: jdbc:mysql://localhost:3306/linuxusers?useUnicode=true&characterEncoding=utf-8&useSSL=true&serverTimezone=UTC
+    driver-class-name: com.mysql.jdbc.Driver
+ 
+mybatis:
+  mapper-locations: classpath:mybatis/mapper/*.xml
+  config-locations: classpath:mybatis/mybatis-config.xml
+  type-aliases-package: com.ausclouds.bdbsec.entity
+  
+ 
+#showSql
+logging:
+  level:
+    com:
+      example:
+        mapper : debug
+        
+#
+you: hello
+ausclouds.cors.address: http://192.168.0.140:6060       
+        
+        
+        
